@@ -13,7 +13,6 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Contributing](#contributing)
-- [FAQ](#faq)
 - [Support](#support)
 - [License](#license)
 - [Thank you](#thank-you)
