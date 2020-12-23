@@ -39,17 +39,19 @@ class DeviceManager:
 
         # First, let us store the device
         self.devices[device.get_name()] = device
+        self.devices[device.get_name()].set_manager(self)
 
         # Secondly, call the on_register
         device.on_register()
 
         # Thirdly, store that device's handlers into the message_handlers.
         for k in device.get_handlers().keys():
-            if self.message_handlers[k] is None:
-                self.message_handlers[k] = device.get_handlers()[k]
-            else:
+            try:
                 for handler in device.get_handlers()[k]:
                     self.message_handlers[k].append(handler)
+            except KeyError:
+                self.message_handlers[k] = device.get_handlers()[k]
+
 
     def deregister_device(self, device):
         """Deregisters a device with the DeviceManager, removing its handlers.
