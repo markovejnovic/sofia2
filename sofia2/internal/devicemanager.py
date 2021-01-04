@@ -16,8 +16,9 @@
 
 """The Sofia2 DeviceManager"""
 
+from ..utils.singleton import Singleton
 
-class DeviceManager:
+class DeviceManager(object):
     """The DeviceManager controls each device as well as the communication
     between them. The DeviceManager also enables devices to be interfaced with
     through the ViewManager.
@@ -25,6 +26,8 @@ class DeviceManager:
     def __init__(self):
         self.devices = {}
         self.message_handlers = {}
+
+    __metaclass__ = Singleton
 
     def register_device(self, device):
         """Registers a device with the DeviceManager, managing it and

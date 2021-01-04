@@ -1,5 +1,5 @@
 # Sofia2 is a simple, easy-to-use, modular home automation system.
-# Copyright (C) 2020 Slobodanka Smilkova
+# Copyright (C) 2020 Marko Vejnovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,18 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Contains the DevicesResource REST resource."""
+class Singleton(type):
+    """Represents a singleton.
 
-from flask_restful import Resource
-from ....internal.devicemanager import DeviceManager
+    Originally found on:
+    https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
+    _instances = {}
 
-class DevicesResource(Resource):
-    """Handles the /devices route"""
-
-    def get(self):
-        """Returns all of the devices that are known to sofia2."""
-        mdevices = DeviceManager().get_all_devices()
-        return list(map(lambda x: {
-            'name': x.get_name(),
-            'handlers': x.get_handlers()
-        }, mdevices)
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls) \
+                .__call__(*args, **kwargs)
+        return cls._instances[cls]
