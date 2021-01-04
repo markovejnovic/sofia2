@@ -19,13 +19,18 @@
 import unittest
 import json
 import requests
+from sofia2.api.device import Device
+from sofia2.internal.devicemanager import DeviceManager
+from sofia2.views.web import get_api_server, get_web_server
 
 class TestDevicesRoute(unittest.TestCase):
     """Tests whether the API view adheres to the API requirements."""
 
-    def setUp():
-        # TODO: Start the REST server
-        pass
+    def setUp(self):
+        self.device_manager = DeviceManager()
+        self.mserver = get_api_server()
+        self.flask_app = get_web_server()
+        self.flask_app.run(debug=True)
 
     def test_empty(self):
         """Tests whether the API correctly returns the information for 0

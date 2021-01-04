@@ -28,4 +28,4 @@ class DevicesResource(Resource):
         return list(map(lambda x: {
             'name': x.get_name(),
             'handlers': x.get_handlers()
-        }, mdevices)
+        }, mdevices))
