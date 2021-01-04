@@ -94,3 +94,8 @@ class TestDeviceManager(unittest.TestCase):
     def test_add_temp_sensor(self):
         self.device_manager.register_device(self.temp_sensor)
         self.assertTrue(self.led_device.test_is_on)
+
+    def test_get_all_devices(self):
+        self.assertEqual(2, len(self.device_manager.get_all_devices()))
+        self.assertIn(self.alarm_device, self.device_manager.get_all_devices())
+        self.assertIn(self.led_device, self.device_manager.get_all_devices())

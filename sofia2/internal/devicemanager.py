@@ -52,6 +52,11 @@ class DeviceManager:
             except KeyError:
                 self.message_handlers[k] = device.get_handlers()[k]
 
+    def get_all_devices(self):
+        """Returns the list of all device objects."""
+        # TODO: dict.values() is O(n), can be optimized if self.devices is not
+        # a dict but a SQL database.
+        return self.devices.values()
 
     def deregister_device(self, device):
         """Deregisters a device with the DeviceManager, removing its handlers.
