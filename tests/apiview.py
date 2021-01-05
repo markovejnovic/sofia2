@@ -17,32 +17,28 @@
 """Contains the tests for the API view."""
 
 import unittest
-import json
+from multiprocessing import Process
 import requests
 from sofia2.api.device import Device
 from sofia2.internal.devicemanager import DeviceManager
-from sofia2.views.web import get_api_server, get_web_server
+from sofia2.views.web import WebView
+from sofia2.views.web.api import RESTView
 
 class TestDevicesRoute(unittest.TestCase):
     """Tests whether the API view adheres to the API requirements."""
 
     def setUp(self):
-        self.device_manager = DeviceManager()
-        self.mserver = get_api_server()
-        self.flask_app = get_web_server()
-        self.flask_app.run(debug=True)
-
-    def test_empty(self):
-        """Tests whether the API correctly returns the information for 0
-        devices."""
-        mdata = json.loads(requests.get('http://localhost:8080/devices'))
-
-        self.assertEqual(0, len(mdata))
-
-    def test_one_device(self):
         """Tests whether the API correctly returns the information for one
         device."""
+
+        # Let's create a dummy LED device
         class LedDevice(Device):
+            """Dummy LED Device"""
+
+            def __init__(self):
+                super().__init__()
+                self.test_is_on = False
+
             def on_register(self):
                 self.test_is_on = False
 
@@ -57,14 +53,54 @@ class TestDevicesRoute(unittest.TestCase):
                     'TEMP_HIGH': [lambda msg: self._set_state(True)],
                     'TSENSE_ON': [lambda msg: self._set_state(False)]
                 }
+
+        # Convenience. URL we will be testing
+        self.base_url = 'http://localhost:5000/devices'
+
+        # Let's first create an LED device
         self.led_device = LedDevice()
+
+        # Let's create the device manager and register our device object
+        self.device_manager = DeviceManager()
         self.device_manager.register_device(self.led_device)
 
-        mdata = json.loads(requests.get('http://localhost:8080/devices'))
+        # Create our WebView (required for RESTView), then RESTView.
+        self.wview = WebView(self.device_manager)
+        self.rview = RESTView(self.device_manager, self.wview.flask_server)
+
+        # Used for debugging purposes, disables flask's auto-reload feature on
+        # code change.
+        self.wview.flask_server.use_reloader = False
+
+        # We actually want the server to start on another process. If we were
+        # starting on the same process as the one we are running, then we would
+        # never actually continue on from this test, as flask would start
+        # taking control of the instruction pointer. This way it starts on its
+        # own process and we can continue.
+        self.flask_proc = Process(target=self.wview.on_start)
+        self.flask_proc.start() # Start that server
+
+    def tearDown(self):
+        # After each test is done we want to stop the process.
+        self.flask_proc.terminate()
+
+    def test_length_is_one(self):
+        """Asserts that the number of devices is 1"""
+        # Let's fetch from localhost/devices and convert that into json
+        mdata = requests.get(self.base_url).json()
+
+        # Assert the length of that is 1 (because we registered one device)
         self.assertEqual(1, len(mdata))
+
+    def test_values_are_correct(self):
+        """Asserts that the values are as expected."""
+        # Let's fetch from localhost/devices and convert that into json
+        mdata = requests.get(self.base_url).json()
+
+        # Assert the values are as we expected.
         self.assertEqual([
             {
                 'name': 'LedDevice',
-                'handlers': [ 'TEMP_SENSE', 'TSENSE_ON' ]
+                'handlers': [ 'TEMP_HIGH', 'TSENSE_ON' ]
             }
         ], mdata)

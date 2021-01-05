@@ -1,27 +1,32 @@
+# Sofia2 is a simple, easy-to-use, modular home automation system.
+# Copyright (C) 2020 Marko Vejnovic
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from flask import Flask
-from flask_restful import Resource, Api
+from sofia2.views import View
 from .api import DevicesResource
 
-FLASK_SERVER = None
+class WebView(View):
+    """Represents a WebView that sofia2 may use. This is a simple class which
+    exposes the Flask server."""
 
-def get_web_server():
-    """Either starts the currently running application or returns the already
-    existing one."""
-    # TODO: Make these objects
-    global FLASK_SERVER
-    if FLASK_SERVER is None:
-        FLASK_SERVER = Flask('sofia2')
-    return FLASK_SERVER
+    def __init__(self, device_manager):
+        """Constructs the flask server."""
+        super().__init__(device_manager)
+        self.flask_server = Flask('sofia2')
 
-REST_API = None
-
-def get_api_server():
-    """Either starts the API server, or returns the already existing one if it
-    exists."""
-    # TODO: Make these objects
-    global REST_API
-    if REST_API is None:
-        REST_API = Api(get_web_server())
-        REST_API.add_resource(DevicesResource, '/devices')
-
-    return REST_API
+    def on_start(self):
+        """Starts the Flask server."""
+        self.flask_server.run()

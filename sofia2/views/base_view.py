@@ -1,5 +1,5 @@
 # Sofia2 is a simple, easy-to-use, modular home automation system.
-# Copyright (C) 2020 Slobodanka Smilkova
+# Copyright (C) 2020 Marko Vejnovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,20 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Contains the DevicesResource REST resource."""
+"""This module contains the base class used in making views. Note that each
+view that is used will be a singleton."""
 
-from flask_restful import Resource
+from sofia2.utils import Singleton
+from sofia2.internal import DeviceManager
 
-class DevicesResource(Resource):
-    """Handles the /devices route"""
+class View(metaclass=Singleton):
+    """Represents the base class for any view that sofia2 may have."""
 
     def __init__(self, device_manager):
         self.device_manager = device_manager
 
-    def get(self):
-        """Returns all of the devices that are known to sofia2."""
-        mdevices = self.device_manager.get_all_devices()
-        return list(map(lambda x: {
-            'name': x.get_name(),
-            'handlers': list(x.get_handlers().keys())
-        }, mdevices))
+    def get_dmanager(self):
+        """Returns the sofia2 device manager. Used for convenience."""
+        return self.device_manager
+
+    def get_devices(self):
+        """Convenience function which returns all devices that are currently
+        registered."""
+        return self.device_manager.get_all_devices()
+
+    def on_start(self):
+        """An overridable method that is called when sofia2 starts this view.
+        """

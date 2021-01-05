@@ -16,7 +16,7 @@
 
 """The Sofia2 DeviceManager"""
 
-from ..utils.singleton import Singleton
+from sofia2.utils import Singleton
 
 class DeviceManager(object):
     """The DeviceManager controls each device as well as the communication
@@ -59,7 +59,7 @@ class DeviceManager(object):
         """Returns the list of all device objects."""
         # TODO: dict.values() is O(n), can be optimized if self.devices is not
         # a dict but a SQL database.
-        return self.devices.values()
+        return list(self.devices.values())
 
     def deregister_device(self, device):
         """Deregisters a device with the DeviceManager, removing its handlers.
