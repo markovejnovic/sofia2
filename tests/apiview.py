@@ -113,16 +113,15 @@ class TestDispatchRoute(unittest.TestCase):
         """Tests whether the API correctly returns the posted signal
 	to the device manager."""
 
-        # Convenience. URL we will be testing
+        # URL we will be testing
         self.base_url = 'http://localhost:5000/dispatch'
 
         # Let's create the device manager
         self.device_manager = DeviceManager()
 
 	# We send a signal to the device manager
-# TODO: fix
-#        xx.post({"type": "TEMP_SENSE", "description": "The temperature is extremely high!", 
-#	"value": "33"})
+        requests.post(self.base_url, data={"type": "TEMP_SENSE", 
+        "description": "The temperature is extremely high!", "value": "33"})
 
         # Create our WebView (required for RESTView), then RESTView.
         self.wview = WebView(self.device_manager)
@@ -140,10 +139,7 @@ class TestDispatchRoute(unittest.TestCase):
         # After each test is done we want to stop the process.
         self.flask_proc.terminate()
 
-"""
-TODO: Fix
     def test_values_are_correct(self):
-
         # Fetch from localhost/dispatch and convert that into json
         mdata = requests.get(self.base_url).json()
 
@@ -155,9 +151,7 @@ TODO: Fix
                 'value': 33
             }
         ], mdata)
-"""
 
-"""
+
 if __name__ == "__main__":
     unittest.main()
-"""
