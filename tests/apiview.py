@@ -19,6 +19,7 @@
 import unittest
 from multiprocessing import Process
 import requests
+import time
 from sofia2.api.device import Device
 from sofia2.internal.devicemanager import DeviceManager
 from sofia2.views.web.api.dispatch_resource import DispatchResource
@@ -32,9 +33,9 @@ class TestDevicesRoute(unittest.TestCase):
         """Tests whether the API correctly returns the information for one
         device."""
 
-        # Let's create a dummy LED device
+        # let's create a dummy led device
         class LedDevice(Device):
-            """Dummy LED Device"""
+            """dummy led device"""
 
             def __init__(self):
                 super().__init__()
@@ -119,9 +120,31 @@ class TestDispatchRoute(unittest.TestCase):
         # Let's create the device manager
         self.device_manager = DeviceManager()
 
-	# We send a signal to the device manager
-        requests.post(self.base_url, data={"type": "TEMP_SENSE", 
-        "description": "The temperature is extremely high!", "value": 33})
+        # let's create a dummy led device
+        class LedDevice(Device):
+            """Dummy Test LED Device"""
+
+            def __init__(self):
+                super().__init__()
+                self.test_is_on = None
+
+            def on_register(self):
+                self.test_is_on = False
+
+            def on_deregister(self):
+                self.test_is_on = False
+
+            def _set_state(self, state):
+                self.test_is_on = state
+
+            def get_handlers(self):
+                return {
+                    'TSENSE_ON': [lambda msg: self._set_state(True)]
+                }
+        self.led_device = LedDevice()
+
+        # Add the LED Device to the manager
+        self.device_manager.register_device(self.led_device)
 
         # Create our WebView (required for RESTView), then RESTView.
         self.wview = WebView(self.device_manager)
@@ -140,18 +163,19 @@ class TestDispatchRoute(unittest.TestCase):
         self.flask_proc.terminate()
 
     def test_values_are_correct(self):
-        # Fetch from localhost/dispatch and convert that into json
-        mdata = requests.get(self.base_url).json()
+	# We send a signal to the device manager
+        requests.post(self.base_url, json={
+            "type": "TSENSE_ON",
+            "description": "The temperature is extremely high!",
+            "value": 33
+        })
 
-        # Assert the values are as we expected.
-        self.assertEqual([
-            {
-                'type': 'TEMP_SENSE',
-                'description': 'The temperature is extremely high!',
-                'value': 33
-            }
-        ], mdata)
+        # Because we are running on another thread, let's wait a bit to make
+        # sure that that thread is done with its work. This is a hack! Don't
+        # use it in production code.
+        time.sleep(1)
 
+        print(self.device_manager.get_all_devices()[0])
 
-if __name__ == "__main__":
-    unittest.main()
+        # After the signal is sent, we expect the handler to have triggered.
+        self.assertTrue(self.device_manager.get_all_devices()[0].test_is_on)

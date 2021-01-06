@@ -17,6 +17,8 @@
 """Contains the DispatchResource REST resource."""
 
 from flask_restful import Resource
+from webargs import fields
+from webargs.flaskparser import use_args
 
 class DispatchResource(Resource):
     """Handles the /dispatch route"""
@@ -24,13 +26,18 @@ class DispatchResource(Resource):
     def __init__(self, device_manager):
         self.device_manager = device_manager
 
-    def post(self, jsonMessage):
+    @use_args({
+        "type": fields.Str(required=True),
+        "description": fields.Str(),
+        "value": fields.Int()
+    }, location='json')
+    def post(self, data):
         """Sends a signal to sofia2.
 	The jsonMessage should be a JSON type of the following form:
 
-	{"type": "<text here>", "description": "<text here>", 
+	{"type": "<text here>", "description": "<text here>",
 	"value": "<text here>"}
 
 	"""
-        self.device_manager.dispatch(jsonMessage, self)
-        return '', 200 
+        self.device_manager.dispatch(data, self)
+        return '', 200
