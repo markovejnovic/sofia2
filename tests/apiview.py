@@ -121,7 +121,7 @@ class TestDispatchRoute(unittest.TestCase):
 
 	# We send a signal to the device manager
         requests.post(self.base_url, data={"type": "TEMP_SENSE", 
-        "description": "The temperature is extremely high!", "value": "33"})
+        "description": "The temperature is extremely high!", "value": 33})
 
         # Create our WebView (required for RESTView), then RESTView.
         self.wview = WebView(self.device_manager)
