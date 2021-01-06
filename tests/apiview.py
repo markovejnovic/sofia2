@@ -21,6 +21,7 @@ from multiprocessing import Process
 import requests
 from sofia2.api.device import Device
 from sofia2.internal.devicemanager import DeviceManager
+from sofia2.views.web.api.dispatch_resource import DispatchResource
 from sofia2.views.web import WebView
 from sofia2.views.web.api import RESTView
 
@@ -104,3 +105,59 @@ class TestDevicesRoute(unittest.TestCase):
                 'handlers': [ 'TEMP_HIGH', 'TSENSE_ON' ]
             }
         ], mdata)
+
+class TestDispatchRoute(unittest.TestCase):
+    """Tests whether the API view adheres to the API requirements."""
+
+    def setUp(self):
+        """Tests whether the API correctly returns the posted signal
+	to the device manager."""
+
+        # Convenience. URL we will be testing
+        self.base_url = 'http://localhost:5000/dispatch'
+
+        # Let's create the device manager
+        self.device_manager = DeviceManager()
+
+	# We send a signal to the device manager
+# TODO: fix
+#        xx.post({"type": "TEMP_SENSE", "description": "The temperature is extremely high!", 
+#	"value": "33"})
+
+        # Create our WebView (required for RESTView), then RESTView.
+        self.wview = WebView(self.device_manager)
+        self.rview = RESTView(self.device_manager, self.wview.flask_server)
+
+        # Used for debugging purposes, disables flask's auto-reload feature on
+        # code change.
+        self.wview.flask_server.use_reloader = False
+
+        # Server starts on another process
+        self.flask_proc = Process(target=self.wview.on_start)
+        self.flask_proc.start() # Start that server
+
+    def tearDown(self):
+        # After each test is done we want to stop the process.
+        self.flask_proc.terminate()
+
+"""
+TODO: Fix
+    def test_values_are_correct(self):
+
+        # Fetch from localhost/dispatch and convert that into json
+        mdata = requests.get(self.base_url).json()
+
+        # Assert the values are as we expected.
+        self.assertEqual([
+            {
+                'type': 'TEMP_SENSE',
+                'description': 'The temperature is extremely high!',
+                'value': 33
+            }
+        ], mdata)
+"""
+
+"""
+if __name__ == "__main__":
+    unittest.main()
+"""

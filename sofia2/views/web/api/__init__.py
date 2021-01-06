@@ -19,6 +19,7 @@
 from flask_restful import Api
 from sofia2.views import View
 from .devices_resource import DevicesResource
+from .dispatch_resource import DispatchResource
 
 class RESTView(View):
     """Represents a RESTView, which provides a REST interface. This view does
@@ -31,3 +32,8 @@ class RESTView(View):
                                       resource_class_kwargs={
                                           'device_manager': self.get_dmanager()
                                       })
+        self.restful_api.add_resource(DispatchResource, '/dispatch',
+                                      resource_class_kwargs={
+                                          'device_manager': self.get_dmanager()
+                                      })
+
