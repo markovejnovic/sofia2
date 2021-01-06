@@ -20,7 +20,7 @@ view that is used will be a singleton."""
 from sofia2.utils import Singleton
 from sofia2.internal import DeviceManager
 
-class View(metaclass=Singleton):
+class View:
     """Represents the base class for any view that sofia2 may have."""
 
     def __init__(self, device_manager):

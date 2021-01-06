@@ -78,9 +78,5 @@ class DeviceManager(object):
                 'value': 30
             }, self)
         """
-        print('Called from %s' % (src, ))
-        print(self.get_all_devices()[0])
-        print(self.message_handlers)
-        print(self.message_handlers[message['type']])
         for handler in self.message_handlers[message['type']]:
             handler(message)

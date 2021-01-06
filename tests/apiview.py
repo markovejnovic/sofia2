@@ -17,7 +17,6 @@
 """Contains the tests for the API view."""
 
 import unittest
-from multiprocessing import Process
 import requests
 import time
 from sofia2.api.device import Device
@@ -68,23 +67,14 @@ class TestDevicesRoute(unittest.TestCase):
 
         # Create our WebView (required for RESTView), then RESTView.
         self.wview = WebView(self.device_manager)
-        self.rview = RESTView(self.device_manager, self.wview.flask_server)
+        self.rview = RESTView(self.device_manager, self.wview.flask_app)
 
-        # Used for debugging purposes, disables flask's auto-reload feature on
-        # code change.
-        self.wview.flask_server.use_reloader = False
-
-        # We actually want the server to start on another process. If we were
-        # starting on the same process as the one we are running, then we would
-        # never actually continue on from this test, as flask would start
-        # taking control of the instruction pointer. This way it starts on its
-        # own process and we can continue.
-        self.flask_proc = Process(target=self.wview.on_start)
-        self.flask_proc.start() # Start that server
+        self.wview.on_start()
 
     def tearDown(self):
         # After each test is done we want to stop the process.
-        self.flask_proc.terminate()
+        self.wview.on_stop()
+        del self.wview
 
     def test_length_is_one(self):
         """Asserts that the number of devices is 1"""
@@ -148,19 +138,12 @@ class TestDispatchRoute(unittest.TestCase):
 
         # Create our WebView (required for RESTView), then RESTView.
         self.wview = WebView(self.device_manager)
-        self.rview = RESTView(self.device_manager, self.wview.flask_server)
+        self.rview = RESTView(self.device_manager, self.wview.flask_app)
 
-        # Used for debugging purposes, disables flask's auto-reload feature on
-        # code change.
-        self.wview.flask_server.use_reloader = False
-
-        # Server starts on another process
-        self.flask_proc = Process(target=self.wview.on_start)
-        self.flask_proc.start() # Start that server
+        self.wview.on_start()
 
     def tearDown(self):
-        # After each test is done we want to stop the process.
-        self.flask_proc.terminate()
+        self.wview.on_stop()
 
     def test_values_are_correct(self):
 	# We send a signal to the device manager
